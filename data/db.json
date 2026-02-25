@@ -1,0 +1,39 @@
+{
+  "keys": [],
+  "settings": {
+    "webhookUrl": "",
+    "enableNotify": false,
+    "notifyInterval": 1,
+    "purchaseRate": 3.5,
+    "sellRate": 4,
+    "exhaustedThreshold": 2,
+    "warningThreshold": 10,
+    "notifyChannels": {
+      "wechat": {
+        "enabled": false,
+        "webhook": ""
+      },
+      "dingtalk": {
+        "enabled": false,
+        "webhook": ""
+      },
+      "feishu": {
+        "enabled": false,
+        "webhook": ""
+      },
+      "email": {
+        "enabled": false,
+        "host": "smtp.163.com",
+        "port": "465",
+        "from": "",
+        "password": "",
+        "to": ""
+      }
+    }
+  },
+  "auth": {
+    "username": "admin",
+    "password": "admin123"
+  },
+  "balanceHistory": []
+}
