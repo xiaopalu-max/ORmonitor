@@ -614,6 +614,9 @@
 
         .token-card {
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .token-card.selected {
@@ -628,12 +631,10 @@
 
         .token-card-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             gap: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 10px;
+            text-align: left;
         }
 
         .key-title-wrap,
@@ -648,6 +649,19 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-size: 15px;
+        }
+
+        .key-title-stack {
+            min-width: 0;
+        }
+
+        .key-card-desc {
+            display: block;
+            margin-top: 2px;
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.35;
         }
 
         .key-actions {
@@ -699,7 +713,91 @@
         .key-line {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+        }
+
+        .chart-card-content {
+            display: flex;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .token-pie-chart {
+            width: min(100%, 250px);
+            aspect-ratio: 1;
+            display: block;
+        }
+
+        .token-pie-chart text {
+            fill: var(--foreground);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .token-pie-chart .pie-center-value {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .token-pie-chart .pie-center-label {
+            fill: var(--muted-foreground);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .pie-label-line {
+            stroke: var(--border);
+            stroke-width: 1;
+        }
+
+        .chart-card-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .chart-card-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--foreground);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .chart-card-meta {
+            line-height: 1.25;
+        }
+
+        .chart-legend {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+            text-align: left;
+        }
+
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            flex: 0 0 auto;
+        }
+
+        .legend-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .error-message {
@@ -3253,6 +3351,97 @@
         }
 
         // ================= 渲染逻辑 =================
+        function polarToCartesian(cx, cy, radius, angleInDegrees) {
+            const angleInRadians = (angleInDegrees - 90) * Math.PI / 180;
+            return {
+                x: cx + (radius * Math.cos(angleInRadians)),
+                y: cy + (radius * Math.sin(angleInRadians))
+            };
+        }
+
+        function describeArc(cx, cy, radius, startAngle, endAngle) {
+            const start = polarToCartesian(cx, cy, radius, endAngle);
+            const end = polarToCartesian(cx, cy, radius, startAngle);
+            const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
+            return [
+                'M', cx, cy,
+                'L', start.x.toFixed(3), start.y.toFixed(3),
+                'A', radius, radius, 0, largeArcFlag, 0, end.x.toFixed(3), end.y.toFixed(3),
+                'Z'
+            ].join(' ');
+        }
+
+        function renderPieLabel(cx, cy, radius, angle, label, color) {
+            const lineStart = polarToCartesian(cx, cy, radius + 2, angle);
+            const lineEnd = polarToCartesian(cx, cy, radius + 12, angle);
+            const textPoint = polarToCartesian(cx, cy, radius + 24, angle);
+            const anchor = textPoint.x >= cx ? 'start' : 'end';
+
+            return `
+                <line class="pie-label-line"
+                      x1="${lineStart.x.toFixed(2)}"
+                      y1="${lineStart.y.toFixed(2)}"
+                      x2="${lineEnd.x.toFixed(2)}"
+                      y2="${lineEnd.y.toFixed(2)}"></line>
+                <text x="${textPoint.x.toFixed(2)}"
+                      y="${textPoint.y.toFixed(2)}"
+                      text-anchor="${anchor}"
+                      dominant-baseline="middle"
+                      style="fill:${color};">${label}</text>
+            `;
+        }
+
+        function renderTokenPieChart(segments, centerValue, centerLabel) {
+            const total = segments.reduce((sum, item) => sum + item.value, 0);
+            const cx = 125;
+            const cy = 125;
+            const radius = 74;
+            let currentAngle = -90;
+            let paths = '';
+            let labels = '';
+
+            if (total <= 0) {
+                paths = `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="var(--muted)"></circle>`;
+            } else {
+                segments.forEach((segment) => {
+                    if (segment.value <= 0) return;
+                    const angle = (segment.value / total) * 360;
+                    const startAngle = currentAngle;
+                    const endAngle = currentAngle + angle;
+                    const midAngle = startAngle + angle / 2;
+                    if (angle >= 359.99) {
+                        paths += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${segment.color}"></circle>`;
+                    } else {
+                        paths += `<path d="${describeArc(cx, cy, radius, startAngle, endAngle)}" fill="${segment.color}"></path>`;
+                    }
+                    if (segment.label && segment.value / total >= 0.08) {
+                        labels += renderPieLabel(cx, cy, radius, midAngle, segment.label, segment.color);
+                    }
+                    currentAngle = endAngle;
+                });
+            }
+
+            return `
+                <svg class="token-pie-chart" viewBox="0 0 250 250" role="img" aria-label="密钥额度分布图">
+                    ${paths}
+                    ${labels}
+                    <circle cx="${cx}" cy="${cy}" r="44" fill="var(--card)" stroke="var(--border)"></circle>
+                    <text class="pie-center-value" x="${cx}" y="120" text-anchor="middle">${centerValue}</text>
+                    <text class="pie-center-label" x="${cx}" y="139" text-anchor="middle">${centerLabel}</text>
+                </svg>
+            `;
+        }
+
+        function renderChartLegend(segments) {
+            return segments.map(segment => `
+                <div class="chart-legend-item">
+                    <span class="legend-dot" style="background:${segment.color};"></span>
+                    <span class="legend-text">${segment.name}: ${segment.display}</span>
+                </div>
+            `).join('');
+        }
+
         function renderCard(conf, data) {
             const isError = !!data.error;
             const isLoading = data.loading === true;
@@ -3270,6 +3459,7 @@
             const purchaseRate = conf.purchaseRate !== undefined ? conf.purchaseRate : (CONFIG.purchaseRate || 3.5);
             const sellRate = conf.sellRate !== undefined ? conf.sellRate : (CONFIG.sellRate || 4.0);
             const profit = (usage * (sellRate - purchaseRate)).toFixed(2);
+            const profitNumber = Math.max(0, parseFloat(profit) || 0);
 
             let statusClass = 'bg-green';
             let badgeClass = 'status-normal';
@@ -3305,6 +3495,45 @@
                 <button class="icon-btn" onclick="openEditModal('${conf.id}')" title="编辑"><i class="fa-solid fa-pencil"></i></button>
                 <button class="icon-btn danger" onclick="deleteKey('${conf.id}')" title="删除"><i class="fa-solid fa-trash-can"></i></button>
             `;
+            const safeRemaining = isUnlimited ? Math.max(usage * 0.25, daily, 1) : Math.max(0, remaining);
+            const chartSegments = [
+                {
+                    name: '总消耗',
+                    label: '消耗',
+                    value: Math.max(usage, 0),
+                    display: '$' + usage.toFixed(2),
+                    color: 'var(--chart-1)'
+                },
+                {
+                    name: '剩余额度',
+                    label: '剩余',
+                    value: safeRemaining,
+                    display: isUnlimited ? '无限' : '$' + remaining.toFixed(2),
+                    color: 'var(--chart-2)'
+                },
+                {
+                    name: '今日',
+                    label: '今日',
+                    value: Math.max(daily, 0),
+                    display: '$' + daily.toFixed(3),
+                    color: 'var(--chart-3)'
+                },
+                {
+                    name: '利润',
+                    label: '利润',
+                    value: profitNumber,
+                    display: '¥' + profit,
+                    color: 'var(--chart-4)'
+                }
+            ];
+            const centerValue = isUnlimited ? '$' + usage.toFixed(1) : (usagePercent).toFixed(0) + '%';
+            const centerLabel = isUnlimited ? '已消耗' : '已使用';
+            const chartSummary = isUnlimited
+                ? `无限额度密钥，当前累计消耗 $${usage.toFixed(2)}`
+                : `剩余额度 $${remaining.toFixed(2)}，已使用 ${(usagePercent).toFixed(1)}%`;
+            const trendText = daily > 0
+                ? `今日新增 $${daily.toFixed(3)}`
+                : '今日暂无消耗增长';
             
             // 加载中卡片
             if (data.loading === true) {
@@ -3317,7 +3546,10 @@
                                    data-key-id="${conf.id}"
                                    onchange="toggleKeySelection('${conf.id}')"
                                    ${isSelected ? 'checked' : ''}>
-                            <span class="key-name">${conf.name}</span>
+                            <div class="key-title-stack">
+                                <span class="key-name">${conf.name}</span>
+                                <span class="key-card-desc">${conf.group || '默认分组'} · 正在同步 OpenRouter 数据</span>
+                            </div>
                         </div>
                         <div class="key-actions">
                             <span class="status-badge status-muted">
@@ -3344,7 +3576,10 @@
                                    data-key-id="${conf.id}"
                                    onchange="toggleKeySelection('${conf.id}')"
                                    ${isSelected ? 'checked' : ''}>
-                            <span class="key-name">${conf.name}</span>
+                            <div class="key-title-stack">
+                                <span class="key-name">${conf.name}</span>
+                                <span class="key-card-desc">${conf.group || '默认分组'} · 数据查询失败</span>
+                            </div>
                         </div>
                         <div class="key-actions">
                             ${actionButtons}
@@ -3364,7 +3599,10 @@
                                data-key-id="${conf.id}"
                                onchange="toggleKeySelection('${conf.id}')"
                                ${isSelected ? 'checked' : ''}>
-                        <span class="key-name">${conf.name}</span>
+                        <div class="key-title-stack">
+                            <span class="key-name">${conf.name}</span>
+                            <span class="key-card-desc">${conf.group || '默认分组'} · ${isUnlimited ? '无限额度' : '额度 $' + quota}</span>
+                        </div>
                     </div>
                     <div class="key-actions">
                         <span class="status-badge ${badgeClass}">${badgeText}</span>
@@ -3379,40 +3617,18 @@
                     </div>
                 </div>
 
-                <div class="progress-group">
-                    <div class="progress-info">
-                        <span>${isUnlimited ? '—' : (usagePercent).toFixed(1) + '%'}</span>
-                        <span>${isUnlimited ? '无限额度' : '剩 $' + remaining.toFixed(2)}</span>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-bar ${statusClass}" style="width: ${isUnlimited ? 100 : remainingPercent}%"></div>
-                    </div>
+                <div class="chart-card-content">
+                    ${renderTokenPieChart(chartSegments, centerValue, centerLabel)}
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <span class="stat-label">总消耗</span>
-                        <span class="stat-value">$${usage.toFixed(2)}</span>
+                <div class="chart-card-footer">
+                    <div class="chart-card-trend">
+                        <span>${trendText}</span>
+                        <i class="fa-solid fa-arrow-trend-up"></i>
                     </div>
-                    <div class="stat-box">
-                        <span class="stat-label">今日</span>
-                        <span class="stat-value">$${daily.toFixed(3)}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">额度</span>
-                        <span class="stat-value">${isUnlimited ? '无限' : '$' + quota}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">利润</span>
-                        <span class="stat-value text-profit">¥${profit}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">收购价</span>
-                        <span class="stat-value">¥${purchaseRate.toFixed(2)}/$</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">售出价</span>
-                        <span class="stat-value text-profit">¥${sellRate.toFixed(2)}/$</span>
+                    <div class="chart-card-meta">${chartSummary}</div>
+                    <div class="chart-legend">
+                        ${renderChartLegend(chartSegments)}
                     </div>
                 </div>
             </div>
