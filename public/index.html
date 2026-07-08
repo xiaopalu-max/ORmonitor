@@ -8,30 +8,97 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --bg-card: #ffffff;
-            --bg-muted: #f1f5f9;
-            --bg-soft: #f8fafc;
-            --border: #e2e8f0;
-            --border-strong: #cbd5e1;
+            --radius: 0.65rem;
+            --background: oklch(1 0 0);
+            --foreground: oklch(0.145 0 0);
+            --card: oklch(1 0 0);
+            --card-foreground: oklch(0.145 0 0);
+            --popover: oklch(1 0 0);
+            --popover-foreground: oklch(0.145 0 0);
+            --primary: oklch(0.205 0 0);
+            --primary-foreground: oklch(0.985 0 0);
+            --secondary: oklch(0.97 0 0);
+            --secondary-foreground: oklch(0.205 0 0);
+            --muted: oklch(0.97 0 0);
+            --muted-foreground: oklch(0.556 0 0);
+            --accent: oklch(0.97 0 0);
+            --accent-foreground: oklch(0.205 0 0);
+            --destructive: oklch(0.577 0.245 27.325);
+            --border: oklch(0.922 0 0);
+            --input: oklch(0.922 0 0);
+            --ring: oklch(0.708 0 0);
+            --chart-1: oklch(0.646 0.222 41.116);
+            --chart-2: oklch(0.6 0.118 184.704);
+            --chart-3: oklch(0.398 0.07 227.392);
+            --chart-4: oklch(0.828 0.189 84.429);
+            --chart-5: oklch(0.769 0.188 70.08);
+            --radius: 0.625rem;
+            --sidebar: oklch(0.985 0 0);
+            --sidebar-foreground: oklch(0.145 0 0);
+            --sidebar-primary: oklch(0.205 0 0);
+            --sidebar-primary-foreground: oklch(0.985 0 0);
+            --sidebar-accent: oklch(0.97 0 0);
+            --sidebar-accent-foreground: oklch(0.205 0 0);
+            --sidebar-border: oklch(0.922 0 0);
+            --sidebar-ring: oklch(0.708 0 0);
+
+            --bg-body: var(--background);
+            --bg-sidebar: var(--sidebar);
+            --bg-card: var(--card);
+            --bg-muted: var(--muted);
+            --bg-soft: var(--secondary);
+            --border-strong: var(--ring);
             --glass-border: 1px solid var(--border);
-            --glass-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-            --shadow-popover: 0 18px 45px rgba(15, 23, 42, 0.16);
+            --glass-shadow: 0 1px 2px oklch(0.145 0 0 / 4%);
+            --shadow-popover: 0 18px 45px oklch(0.145 0 0 / 16%);
 
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --text-subtle: #94a3b8;
+            --text-main: var(--foreground);
+            --text-muted: var(--muted-foreground);
+            --text-subtle: var(--ring);
 
-            --accent-blue: #2563eb;
-            --accent-green: #059669;
-            --accent-orange: #d97706;
-            --accent-red: #dc2626;
-            --accent-violet: #7c3aed;
+            --accent-blue: var(--primary);
+            --accent-green: var(--chart-2);
+            --accent-orange: var(--chart-1);
+            --accent-red: var(--destructive);
+            --accent-violet: var(--chart-3);
 
-            --ring: rgba(37, 99, 235, 0.18);
-            --radius-card: 8px;
+            --focus-ring: oklch(from var(--ring) l c h / 35%);
+            --radius-card: var(--radius);
             --sidebar-width: 232px;
+        }
+
+        .dark {
+            --background: oklch(0.145 0 0);
+            --foreground: oklch(0.985 0 0);
+            --card: oklch(0.205 0 0);
+            --card-foreground: oklch(0.985 0 0);
+            --popover: oklch(0.205 0 0);
+            --popover-foreground: oklch(0.985 0 0);
+            --primary: oklch(0.922 0 0);
+            --primary-foreground: oklch(0.205 0 0);
+            --secondary: oklch(0.269 0 0);
+            --secondary-foreground: oklch(0.985 0 0);
+            --muted: oklch(0.269 0 0);
+            --muted-foreground: oklch(0.708 0 0);
+            --accent: oklch(0.269 0 0);
+            --accent-foreground: oklch(0.985 0 0);
+            --destructive: oklch(0.704 0.191 22.216);
+            --border: oklch(1 0 0 / 10%);
+            --input: oklch(1 0 0 / 15%);
+            --ring: oklch(0.556 0 0);
+            --chart-1: oklch(0.488 0.243 264.376);
+            --chart-2: oklch(0.696 0.17 162.48);
+            --chart-3: oklch(0.769 0.188 70.08);
+            --chart-4: oklch(0.627 0.265 303.9);
+            --chart-5: oklch(0.645 0.246 16.439);
+            --sidebar: oklch(0.205 0 0);
+            --sidebar-foreground: oklch(0.985 0 0);
+            --sidebar-primary: oklch(0.488 0.243 264.376);
+            --sidebar-primary-foreground: oklch(0.985 0 0);
+            --sidebar-accent: oklch(0.269 0 0);
+            --sidebar-accent-foreground: oklch(0.985 0 0);
+            --sidebar-border: oklch(1 0 0 / 10%);
+            --sidebar-ring: oklch(0.556 0 0);
         }
 
         * {
@@ -42,13 +109,13 @@
         }
 
         *:focus-visible {
-            outline: 2px solid var(--accent-blue);
+            outline: 2px solid var(--ring);
             outline-offset: 2px;
         }
 
         body {
             background-color: var(--bg-body);
-            background-image: linear-gradient(180deg, #ffffff 0%, #f8fafc 42%, #eef2f7 100%);
+            background-image: linear-gradient(180deg, var(--background) 0%, var(--secondary) 100%);
             background-attachment: fixed;
             color: var(--text-main);
             display: flex;
@@ -96,10 +163,10 @@
             margin-bottom: 30px;
         }
         .login-error {
-            background: #fef2f2;
-            color: #991b1b;
+            background: oklch(from var(--destructive) l c h / 10%);
+            color: var(--destructive);
             padding: 12px;
-            border: 1px solid #fecaca;
+            border: 1px solid oklch(from var(--destructive) l c h / 25%);
             border-radius: 8px;
             font-size: 12px;
             margin-bottom: 20px;
@@ -156,7 +223,7 @@
         }
 
         .menu-item.active {
-            background-color: #eff6ff;
+            background-color: var(--sidebar-accent);
             color: var(--accent-blue);
         }
 
@@ -177,7 +244,7 @@
             box-shadow: none;
             transition: background 0.18s;
         }
-        .add-btn:hover { background: #1d4ed8; }
+        .add-btn:hover { background: var(--accent-foreground); }
 
         /* 刷新按钮样式 */
         .refresh-btn {
@@ -197,7 +264,7 @@
             transition: background 0.18s;
         }
         .refresh-btn:hover {
-            background: #059669;
+            background: var(--chart-2);
         }
         .refresh-btn:disabled {
             opacity: 0.6;
@@ -229,7 +296,7 @@
             white-space: nowrap;
         }
         .filter-btn:hover {
-            background: #e2e8f0;
+            background: var(--accent);
             border-color: var(--border-strong);
         }
         .filter-btn.active {
@@ -238,14 +305,14 @@
             border-color: var(--accent-blue);
         }
         .filter-btn.active:hover {
-            background: #2563eb;
+            background: var(--accent-foreground);
         }
         
         .filter-clear-btn {
             padding: 8px 16px;
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fca5a5;
+            background: oklch(from var(--destructive) l c h / 10%);
+            color: var(--destructive);
+            border: 1px solid oklch(from var(--destructive) l c h / 25%);
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
@@ -256,8 +323,8 @@
             transition: all 0.2s;
         }
         .filter-clear-btn:hover {
-            background: #fecaca;
-            border-color: #f87171;
+            background: oklch(from var(--destructive) l c h / 16%);
+            border-color: oklch(from var(--destructive) l c h / 35%);
         }
 
         .sidebar-footer {
@@ -277,7 +344,7 @@
         .mini-stat span { font-weight: 700; color: var(--text-main); }
         .mini-stat span.hl { color: var(--accent-green); }
 
-        .last-update { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 12px; }
+        .last-update { font-size: 11px; color: var(--text-subtle); text-align: center; margin-top: 12px; }
 
         /* ========== 右侧主内容 ========== */
         .main-content {
@@ -400,16 +467,16 @@
             display: inline-block;
             padding: 4px 8px;
             margin: 2px;
-            background: #eff6ff;
+            background: var(--accent);
             color: var(--accent-blue);
-            border: 1px solid #bfdbfe;
+            border: 1px solid var(--border);
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
         }
 
         .group-chip:hover {
-            background: #dbeafe;
+            background: var(--secondary);
         }
 
         .analysis-list {
@@ -456,7 +523,7 @@
             gap: 10px;
             pointer-events: auto;
             padding: 8px;
-            background: rgba(255, 255, 255, 0.95);
+            background: oklch(from var(--popover) l c h / 95%);
             border: 1px solid var(--border);
             border-radius: 10px;
             box-shadow: var(--shadow-popover);
@@ -468,16 +535,16 @@
         }
 
         .btn-danger:hover {
-            background: #b91c1c;
+            background: var(--destructive);
         }
 
         .btn-secondary {
-            background: #475569;
+            background: var(--secondary-foreground);
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #334155;
+            background: var(--foreground);
         }
 
         .group-section {
@@ -513,9 +580,9 @@
         .group-action {
             margin-left: auto;
             padding: 6px 10px;
-            background: #ecfdf5;
+            background: oklch(from var(--chart-2) l c h / 10%);
             color: var(--accent-green);
-            border: 1px solid #bbf7d0;
+            border: 1px solid oklch(from var(--chart-2) l c h / 25%);
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
@@ -527,8 +594,8 @@
         }
 
         .group-action:hover {
-            background: #d1fae5;
-            border-color: #86efac;
+            background: oklch(from var(--chart-2) l c h / 16%);
+            border-color: oklch(from var(--chart-2) l c h / 35%);
         }
 
         .state-empty {
@@ -551,12 +618,12 @@
 
         .token-card.selected {
             border-color: var(--accent-blue);
-            box-shadow: 0 0 0 2px var(--ring);
+            box-shadow: 0 0 0 2px var(--focus-ring);
         }
 
         .token-card.error {
-            border-color: #fecaca;
-            background: #fffafa;
+            border-color: oklch(from var(--destructive) l c h / 25%);
+            background: oklch(from var(--destructive) l c h / 6%);
         }
 
         .token-card-header {
@@ -711,7 +778,7 @@
             border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px oklch(0.145 0 0 / 15%);
             display: none;
             align-items: center;
             gap: 10px;
@@ -723,14 +790,14 @@
             display: flex;
         }
         .toast-message.success {
-            background: #d1fae5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
+            background: oklch(from var(--chart-2) l c h / 14%);
+            color: var(--chart-2);
+            border: 1px solid oklch(from var(--chart-2) l c h / 28%);
         }
         .toast-message.error {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
+            background: oklch(from var(--destructive) l c h / 12%);
+            color: var(--destructive);
+            border: 1px solid oklch(from var(--destructive) l c h / 26%);
         }
         @keyframes slideDown {
             from {
@@ -770,7 +837,7 @@
         }
         .glass-card:hover { 
             border-color: var(--border-strong);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 8px 24px oklch(0.145 0 0 / 8%);
         }
 
         .card-header {
@@ -805,9 +872,9 @@
         .status-badge {
             font-size: 10px; padding: 3px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.2px;
         }
-        .status-normal { background: #dcfce7; color: #166534; }
-        .status-warn { background: #fef3c7; color: #92400e; }
-        .status-danger { background: #fee2e2; color: #991b1b; }
+        .status-normal { background: oklch(from var(--chart-2) l c h / 14%); color: var(--chart-2); }
+        .status-warn { background: oklch(from var(--chart-4) l c h / 18%); color: var(--chart-5); }
+        .status-danger { background: oklch(from var(--destructive) l c h / 12%); color: var(--destructive); }
         .status-muted { background: var(--bg-muted); color: var(--text-muted); }
 
         .key-mask {
@@ -860,18 +927,18 @@
             background: var(--bg-card); border: var(--glass-border);
             box-shadow: var(--glass-shadow); border-radius: var(--radius-card); padding: 30px; text-align: center;
         }
-        .price-icon { font-size: 36px; margin-bottom: 15px; color: #94a3b8; }
+        .price-icon { font-size: 36px; margin-bottom: 15px; color: var(--text-subtle); }
         .price-title { color: var(--text-muted); font-size: 12px; letter-spacing: 1px; margin-bottom: 5px; font-weight: 600; }
         .price-number { font-size: 36px; font-weight: 800; color: var(--text-main); }
         .price-number input[type="number"] {
             outline: none;
         }
         .price-number input[type="number"]:hover {
-            border-bottom-color: rgba(59, 130, 246, 0.3);
+            border-bottom-color: var(--focus-ring);
         }
         .price-number input[type="number"]:focus {
             border-bottom-color: var(--accent-blue);
-            background: rgba(255, 255, 255, 0.5);
+            background: oklch(from var(--card) l c h / 50%);
             border-radius: 8px;
             padding: 5px;
         }
@@ -893,7 +960,7 @@
         /* Loading */
         .loading-holder { text-align: center; padding: 60px; color: var(--text-muted); grid-column: 1 / -1; }
         .spinner {
-            display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(0,0,0,0.1);
+            display: inline-block; width: 32px; height: 32px; border: 3px solid oklch(from var(--foreground) l c h / 10%);
             border-radius: 50%; border-top-color: var(--accent-blue); animation: spin 0.8s linear infinite; margin-bottom: 15px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -901,14 +968,14 @@
         /* Modal (弹窗) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.42); backdrop-filter: blur(4px);
+            background: oklch(0.145 0 0 / 42%); backdrop-filter: blur(4px);
             z-index: 100; display: none; align-items: center; justify-content: center;
             padding: 16px;
         }
         .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
         .modal-overlay:not(.open) { display: none; }
         .modal-content {
-            background: #ffffff; width: min(400px, calc(100vw - 32px)); padding: 24px;
+            background: var(--popover); width: min(400px, calc(100vw - 32px)); padding: 24px;
             border: 1px solid var(--border);
             border-radius: 8px; box-shadow: var(--shadow-popover);
             max-height: calc(100vh - 32px);
@@ -927,7 +994,7 @@
             background: #fff;
             color: var(--text-main);
         }
-        .form-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px var(--ring); }
+        .form-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px var(--focus-ring); }
         textarea.form-input {
             resize: vertical;
             min-height: 150px;
@@ -936,10 +1003,10 @@
         }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
         .btn { padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; transition: background 0.18s, border-color 0.18s, color 0.18s; }
-        .btn-cancel { background: #fff; color: #334155; border-color: var(--border); }
-        .btn-submit { background: var(--accent-blue); color: white; }
+        .btn-cancel { background: var(--card); color: var(--foreground); border-color: var(--border); }
+        .btn-submit { background: var(--primary); color: var(--primary-foreground); }
         .btn-cancel:hover { background: var(--bg-muted); }
-        .btn-submit:hover { background: #1d4ed8; }
+        .btn-submit:hover { background: var(--accent-foreground); }
 
         @media (max-width: 768px) {
             .sidebar { width: 60px; padding-top: 20px; }
@@ -1417,9 +1484,9 @@
                         <p class="info-note">
                             <i class="fa-solid fa-info-circle" style="margin-right: 5px;"></i>
                             告警阈值用于判断令牌状态：<br>
-                            • 余额 &lt; 耗尽阈值 → <span style="color: #b91c1c;">耗尽</span><br>
-                            • 耗尽阈值 ≤ 余额 &lt; 警告阈值 → <span style="color: #b45309;">警告</span><br>
-                            • 余额 ≥ 警告阈值 → <span style="color: #047857;">健康</span>
+                            • 余额 &lt; 耗尽阈值 → <span style="color: var(--destructive);">耗尽</span><br>
+                            • 耗尽阈值 ≤ 余额 &lt; 警告阈值 → <span style="color: var(--chart-5);">警告</span><br>
+                            • 余额 ≥ 警告阈值 → <span style="color: var(--chart-2);">健康</span>
                         </p>
                     </div>
                     
