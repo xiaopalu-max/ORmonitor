@@ -864,158 +864,6 @@
             gap: 8px;
             flex-shrink: 0;
         }
-
-        .interactive-chart-card {
-            padding: 0;
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
-
-        .interactive-chart-header {
-            display: flex;
-            align-items: stretch;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .interactive-chart-title {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 4px;
-            padding: 18px 24px;
-            min-width: 0;
-        }
-
-        .interactive-chart-title h2 {
-            font-size: 16px;
-            line-height: 1.2;
-            color: var(--foreground);
-            margin: 0;
-        }
-
-        .interactive-chart-title p {
-            color: var(--muted-foreground);
-            font-size: 13px;
-            margin: 0;
-        }
-
-        .chart-toggle-group {
-            display: flex;
-            border-left: 1px solid var(--border);
-        }
-
-        .chart-toggle {
-            position: relative;
-            min-width: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 4px;
-            padding: 18px 24px;
-            text-align: left;
-            background: transparent;
-            border: 0;
-            border-left: 1px solid var(--border);
-            color: var(--foreground);
-            cursor: pointer;
-            transition: background 0.18s;
-        }
-
-        .chart-toggle:first-child {
-            border-left: 0;
-        }
-
-        .chart-toggle:hover,
-        .chart-toggle.active {
-            background: oklch(from var(--muted) l c h / 65%);
-        }
-
-        .chart-toggle span {
-            color: var(--muted-foreground);
-            font-size: 12px;
-        }
-
-        .chart-toggle strong {
-            color: var(--foreground);
-            font-size: 24px;
-            line-height: 1;
-            font-weight: 800;
-            letter-spacing: 0;
-        }
-
-        .interactive-chart-content {
-            position: relative;
-            padding: 20px 18px 24px;
-        }
-
-        .bar-chart-svg {
-            display: block;
-            width: 100%;
-            height: 250px;
-        }
-
-        .bar-chart-grid {
-            stroke: var(--border);
-            stroke-width: 1;
-        }
-
-        .bar-chart-axis {
-            fill: var(--muted-foreground);
-            font-size: 11px;
-        }
-
-        .bar-chart-bar {
-            fill: var(--chart-2);
-            transition: opacity 0.18s;
-        }
-
-        .bar-chart-bar.daily {
-            fill: var(--chart-1);
-        }
-
-        .bar-chart-bar:hover {
-            opacity: 0.78;
-        }
-
-        .bar-chart-empty {
-            height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--muted-foreground);
-            font-size: 13px;
-        }
-
-        .chart-tooltip {
-            position: fixed;
-            z-index: 10001;
-            display: none;
-            pointer-events: none;
-            min-width: 150px;
-            padding: 9px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--popover);
-            color: var(--popover-foreground);
-            box-shadow: var(--shadow-popover);
-            font-size: 12px;
-        }
-
-        .chart-tooltip.show {
-            display: block;
-        }
-
-        .chart-tooltip strong {
-            display: block;
-            margin-bottom: 3px;
-            color: var(--foreground);
-        }
-
-        .chart-tooltip span {
-            color: var(--muted-foreground);
-        }
         
         /* 顶部提示消息 */
         .toast-message {
@@ -1272,10 +1120,6 @@
             .select-field { flex: 1; }
             .settings-grid { grid-template-columns: 1fr; }
             .key-grid { grid-template-columns: 1fr; }
-            .interactive-chart-header { flex-direction: column; }
-            .chart-toggle-group { border-left: 0; border-top: 1px solid var(--border); }
-            .chart-toggle { flex: 1; min-width: 0; padding: 14px 16px; }
-            .chart-toggle strong { font-size: 18px; }
             .batch-actions-inner { flex-wrap: wrap; }
             /* 批量操作工具栏在移动端 */
             #batch-actions-bar {
@@ -1424,28 +1268,6 @@
                 </div>
             </div>
             
-            <div class="glass-card interactive-chart-card" id="keys-bar-chart-card">
-                <div class="interactive-chart-header">
-                    <div class="interactive-chart-title">
-                        <h2>密钥用量趋势</h2>
-                        <p>按密钥汇总展示当前总消耗与今日消耗</p>
-                    </div>
-                    <div class="chart-toggle-group" role="tablist" aria-label="切换柱状图指标">
-                        <button class="chart-toggle active" type="button" data-chart="usage" aria-pressed="true" onclick="setActiveBarChart('usage')">
-                            <span>总消耗</span>
-                            <strong id="bar-total-usage">$0.00</strong>
-                        </button>
-                        <button class="chart-toggle" type="button" data-chart="daily" aria-pressed="false" onclick="setActiveBarChart('daily')">
-                            <span>今日消耗</span>
-                            <strong id="bar-total-daily">$0.00</strong>
-                        </button>
-                    </div>
-                </div>
-                <div class="interactive-chart-content" id="interactive-bar-chart">
-                    <div class="loading-holder"><div class="spinner"></div><p>正在准备图表...</p></div>
-                </div>
-            </div>
-
             <!-- 批量操作工具栏 - 固定在底部，仅显示按钮 -->
             <div id="batch-actions-bar" class="batch-actions">
                 <div class="batch-actions-inner">
@@ -2021,7 +1843,6 @@
         // 筛选相关变量
         let currentStatusFilter = 'all'; // all, healthy, warning, exhausted, error
         let currentSearchText = '';
-        let activeBarChart = 'usage'; // usage 或 daily
         
         // 批量操作相关变量
         let selectedKeys = new Set(); // 存储选中的密钥ID
@@ -2213,7 +2034,6 @@
             
             container.innerHTML = htmlChunks;
             updateUI();
-            renderInteractiveBarChart();
             updateBatchActionsBar(); // 更新批量操作栏
         }
 
@@ -2395,133 +2215,6 @@
 
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => showStatus('已复制到剪贴板', 'success'));
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function setActiveBarChart(metric) {
-            activeBarChart = metric === 'daily' ? 'daily' : 'usage';
-            renderInteractiveBarChart();
-        }
-
-        function getBarChartRows() {
-            return keysList
-                .map((conf, index) => {
-                    const data = cachedKeyData[index] || {};
-                    if (conf.archived || data.error || data.loading) return null;
-                    return {
-                        id: conf.id,
-                        name: conf.name || '未命名密钥',
-                        usage: Math.max(0, data.usage || 0),
-                        daily: Math.max(0, data.usage_daily || 0)
-                    };
-                })
-                .filter(Boolean)
-                .sort((a, b) => b[activeBarChart] - a[activeBarChart])
-                .slice(0, 12);
-        }
-
-        function renderInteractiveBarChart() {
-            const container = document.getElementById('interactive-bar-chart');
-            if (!container) return;
-
-            document.querySelectorAll('.chart-toggle').forEach(btn => {
-                const isActive = btn.dataset.chart === activeBarChart;
-                btn.classList.toggle('active', isActive);
-                btn.setAttribute('aria-pressed', String(isActive));
-            });
-
-            const totals = keysList.reduce((acc, conf, index) => {
-                const data = cachedKeyData[index] || {};
-                if (conf.archived || data.error || data.loading) return acc;
-                acc.usage += Math.max(0, data.usage || 0);
-                acc.daily += Math.max(0, data.usage_daily || 0);
-                return acc;
-            }, { usage: 0, daily: 0 });
-
-            const usageEl = document.getElementById('bar-total-usage');
-            const dailyEl = document.getElementById('bar-total-daily');
-            if (usageEl) usageEl.textContent = '$' + totals.usage.toFixed(2);
-            if (dailyEl) dailyEl.textContent = '$' + totals.daily.toFixed(3);
-
-            const rows = getBarChartRows();
-            if (rows.length === 0) {
-                container.innerHTML = '<div class="bar-chart-empty">暂无可展示的密钥用量数据</div>';
-                return;
-            }
-
-            const width = 920;
-            const height = 250;
-            const padding = { top: 18, right: 20, bottom: 42, left: 34 };
-            const chartWidth = width - padding.left - padding.right;
-            const chartHeight = height - padding.top - padding.bottom;
-            const maxValue = Math.max(...rows.map(row => row[activeBarChart]), 1);
-            const slot = chartWidth / rows.length;
-            const barWidth = Math.max(12, Math.min(44, slot * 0.58));
-            const metricLabel = activeBarChart === 'usage' ? '总消耗' : '今日消耗';
-            const barClass = activeBarChart === 'daily' ? 'bar-chart-bar daily' : 'bar-chart-bar';
-
-            const gridLines = [0, 0.25, 0.5, 0.75, 1].map(ratio => {
-                const y = padding.top + chartHeight - chartHeight * ratio;
-                return `
-                    <line class="bar-chart-grid" x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}"></line>
-                    <text class="bar-chart-axis" x="8" y="${y + 4}">$${(maxValue * ratio).toFixed(maxValue >= 10 ? 0 : 2)}</text>
-                `;
-            }).join('');
-
-            const bars = rows.map((row, index) => {
-                const value = row[activeBarChart];
-                const barHeight = (value / maxValue) * chartHeight;
-                const x = padding.left + index * slot + (slot - barWidth) / 2;
-                const y = padding.top + chartHeight - barHeight;
-                const label = escapeHtml(row.name.length > 8 ? row.name.slice(0, 8) + '...' : row.name);
-                const tooltip = `${escapeHtml(row.name)}|${metricLabel}: $${value.toFixed(activeBarChart === 'daily' ? 3 : 2)}|总消耗: $${row.usage.toFixed(2)} / 今日: $${row.daily.toFixed(3)}`;
-                return `
-                    <rect class="${barClass}"
-                          x="${x.toFixed(2)}"
-                          y="${y.toFixed(2)}"
-                          width="${barWidth.toFixed(2)}"
-                          height="${Math.max(1, barHeight).toFixed(2)}"
-                          rx="5"
-                          data-tooltip="${tooltip}"
-                          onmousemove="showChartTooltip(event, this.dataset.tooltip)"
-                          onmouseleave="hideChartTooltip()"></rect>
-                    <text class="bar-chart-axis"
-                          x="${(x + barWidth / 2).toFixed(2)}"
-                          y="${height - 15}"
-                          text-anchor="middle">${label}</text>
-                `;
-            }).join('');
-
-            container.innerHTML = `
-                <svg class="bar-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${metricLabel}柱状图">
-                    ${gridLines}
-                    ${bars}
-                </svg>
-                <div class="chart-tooltip" id="chart-tooltip"></div>
-            `;
-        }
-
-        function showChartTooltip(event, rawContent) {
-            const tooltip = document.getElementById('chart-tooltip');
-            if (!tooltip) return;
-            const lines = String(rawContent || '').split('|');
-            tooltip.innerHTML = `<strong>${escapeHtml(lines[0] || '')}</strong><span>${lines.slice(1).map(escapeHtml).join('<br>')}</span>`;
-            tooltip.style.left = `${event.clientX + 12}px`;
-            tooltip.style.top = `${event.clientY + 12}px`;
-            tooltip.classList.add('show');
-        }
-
-        function hideChartTooltip() {
-            const tooltip = document.getElementById('chart-tooltip');
-            if (tooltip) tooltip.classList.remove('show');
         }
         
         // ================= 搜索和筛选功能 =================
@@ -3985,7 +3678,6 @@
             
             const now = new Date();
             document.getElementById('last-update-time').textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-            renderInteractiveBarChart();
         }
 
         async function render() {
@@ -3999,7 +3691,6 @@
                 globalData = { totalUsage: 0, totalRemaining: 0, totalDaily: 0 };
                 cachedKeyData = [];
                 updateUI();
-                renderInteractiveBarChart();
                 return;
             }
 
