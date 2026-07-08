@@ -3259,7 +3259,7 @@
         }
         
         // 异步查询单个密钥的数据并更新UI（批量更新，减少渲染）
-        async function fetchKeyDataAsync(conf, index, updateImmediately = false) {
+        async function fetchKeyDataAsync(conf, index, updateImmediately = false, preserveCached = false) {
             const keyId = conf.id;
             
             // 如果正在查询，跳过
@@ -3271,7 +3271,8 @@
             
             try {
                 // 使用缓存数据或占位数据先显示
-                if (!cachedKeyData[index] || cachedKeyData[index].loading === undefined) {
+                const hasDisplayableCache = preserveCached && cachedKeyData[index] && cachedKeyData[index].loading !== true;
+                if (!hasDisplayableCache && (!cachedKeyData[index] || cachedKeyData[index].loading === undefined)) {
                     cachedKeyData[index] = { loading: true };
                     if (updateImmediately) {
                         // 只在首次加载时立即渲染
@@ -3324,13 +3325,15 @@
         }
         
         // 并发查询多个密钥，控制并发数量
-        async function fetchKeysInBatches(keys, maxConcurrent = 8) {
+        async function fetchKeysInBatches(keys, maxConcurrent = 8, options = {}) {
             // 直接并发执行所有密钥，使用Promise.allSettled确保稳定性
             // 浏览器会自动管理HTTP连接池，限制并发数
             // 但我们可以手动控制并发数量以优化性能
+            const preserveCached = options.preserveCached === true;
+            const batchPromises = [];
             const executeBatch = async (batch, isFirst) => {
                 const promises = batch.map(({ conf, idx }, i) => 
-                    fetchKeyDataAsync(conf, idx, isFirst && i < 3) // 前3个立即更新UI
+                    fetchKeyDataAsync(conf, idx, isFirst && i < 3 && !preserveCached, preserveCached) // 首次加载前3个立即更新UI
                 );
                 return Promise.allSettled(promises);
             };
@@ -3338,16 +3341,17 @@
             // 分批执行，每批maxConcurrent个
             for (let i = 0; i < keys.length; i += maxConcurrent) {
                 const batch = keys.slice(i, i + maxConcurrent);
-                // 不等待完成，立即处理下一批（后台执行）
-                executeBatch(batch, i === 0).catch(err => {
+                const batchPromise = executeBatch(batch, i === 0).catch(err => {
                     console.error('批量查询失败:', err);
                 });
+                batchPromises.push(batchPromise);
                 
                 // 如果还有更多批次，短暂延迟以避免浏览器连接数限制
                 if (i + maxConcurrent < keys.length && keys.length > maxConcurrent) {
                     await new Promise(resolve => setTimeout(resolve, 20));
                 }
             }
+            return Promise.allSettled(batchPromises);
         }
 
         // ================= 渲染逻辑 =================
@@ -3680,8 +3684,11 @@
             document.getElementById('last-update-time').textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
 
-        async function render() {
+        async function render(options = {}) {
             const container = document.getElementById('keys-container');
+            const preserveExisting = options.preserveExisting === true;
+            const previousKeysList = keysList;
+            const previousCachedData = cachedKeyData;
             
             // 1. 获取密钥列表
             await fetchKeysList();
@@ -3708,10 +3715,8 @@
                     }
 
                     // 尝试从旧缓存中找到相同ID的密钥数据
-                    const oldData = cachedKeyData.find((_, oldIndex) => {
-                        const oldKey = keysList.find(k => k.id === currentKey.id);
-                        return oldKey && cachedKeyData[oldIndex] && !cachedKeyData[oldIndex].loading;
-                    });
+                    const oldIndex = previousKeysList.findIndex(k => k.id === currentKey.id);
+                    const oldData = oldIndex >= 0 ? previousCachedData[oldIndex] : null;
                     newCachedData[i] = oldData || { loading: true };
                 }
                 cachedKeyData = newCachedData;
@@ -3723,7 +3728,13 @@
                     if (isInvalidGroup) {
                         return { error: '密钥失效' };
                     }
-                    if (!data || (data.loading === undefined && !data.error)) {
+                    if (!data) {
+                        return { loading: true };
+                    }
+                    if (preserveExisting) {
+                        return data;
+                    }
+                    if (!data.error && data.loading !== true && data.usage === undefined) {
                         return { loading: true };
                     }
                     return data;
@@ -3740,7 +3751,7 @@
             const keysToFetch = keysList
                 .map((conf, index) => ({ conf, idx: index }))
                 .filter(item => !item.conf.archived && (item.conf.group || '默认分组') !== INVALID_GROUP_NAME);
-            fetchKeysInBatches(keysToFetch, 8); // 最多8个并发查询
+            return fetchKeysInBatches(keysToFetch, 8, { preserveCached: preserveExisting }); // 最多8个并发查询
         }
 
         // ================= 设置相关 =================
@@ -4203,10 +4214,12 @@
             btn.disabled = true;
             
             try {
-                // 调用现有的渲染函数刷新数据
-                await render();
+                // 后台刷新：保留现有展示，只在每个密钥拿到新数据后实时更新卡片/图表。
+                await render({ preserveExisting: true });
+                showStatus('密钥状态已刷新', 'success');
             } catch (e) {
                 console.error('刷新失败:', e);
+                showStatus('刷新失败: ' + e.message, 'error');
             } finally {
                 // 恢复按钮状态
                 btn.classList.remove('loading');
