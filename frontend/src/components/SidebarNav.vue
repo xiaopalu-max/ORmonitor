@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Archive, Bell, CircleDollarSign, KeyRound, Plus, Settings } from 'lucide-vue-next';
+import { Activity, Archive, Bell, CircleDollarSign, KeyRound, Plus, Settings, TrendingUp, Wallet } from 'lucide-vue-next';
 import type { PageName } from '../types';
 
 defineProps<{
@@ -21,7 +21,13 @@ const items: Array<{ key: PageName; label: string; icon: typeof KeyRound }> = [
 
 <template>
   <aside class="sidebar">
-    <div class="brand"><CircleDollarSign :size="22" />OR Monitor</div>
+    <div class="brand">
+      <span class="brand-mark"><CircleDollarSign :size="21" /></span>
+      <span>
+        <strong>OR Monitor</strong>
+        <small>额度与通知控制台</small>
+      </span>
+    </div>
     <button class="add-btn" @click="emit('add')"><Plus :size="16" />添加密钥</button>
     <nav class="nav-list" aria-label="主导航">
       <button
@@ -34,10 +40,19 @@ const items: Array<{ key: PageName; label: string; icon: typeof KeyRound }> = [
         {{ item.label }}
       </button>
     </nav>
-    <dl class="sidebar-stats">
-      <div><dt>总剩余额度</dt><dd>${{ totalRemaining.toFixed(2) }}</dd></div>
-      <div><dt>今日消耗</dt><dd>${{ todayUsage.toFixed(2) }}</dd></div>
-      <div><dt>总利润</dt><dd>¥{{ totalProfit.toFixed(2) }}</dd></div>
-    </dl>
+    <div class="sidebar-stats" aria-label="额度摘要">
+      <div>
+        <Wallet :size="16" />
+        <span><span class="stat-label">总剩余额度</span><strong class="stat-value">${{ totalRemaining.toFixed(2) }}</strong></span>
+      </div>
+      <div>
+        <Activity :size="16" />
+        <span><span class="stat-label">今日消耗</span><strong class="stat-value">${{ todayUsage.toFixed(2) }}</strong></span>
+      </div>
+      <div>
+        <TrendingUp :size="16" />
+        <span><span class="stat-label">总利润</span><strong class="stat-value">¥{{ totalProfit.toFixed(2) }}</strong></span>
+      </div>
+    </div>
   </aside>
 </template>

@@ -30,6 +30,8 @@ const remaining = computed(() => (unlimited.value ? Infinity : Math.max(0, quota
 const remainingPercent = computed(() => (unlimited.value ? 100 : Math.max(0, Math.min(100, (remaining.value / quota.value) * 100))));
 const rates = computed(() => effectiveRates(props.item, props.config));
 const profit = computed(() => currentUsage.value * (rates.value.sellRate - rates.value.purchaseRate));
+const groupName = computed(() => props.item.group || '默认分组');
+const consumedPercent = computed(() => (unlimited.value ? 0 : Math.max(0, Math.min(100, 100 - remainingPercent.value))));
 const archivedTime = computed(() => {
   if (!props.item.archivedTime) return '未知';
   const date = new Date(props.item.archivedTime);
@@ -45,11 +47,14 @@ const statusLabel = computed(() => {
 <template>
   <article :class="['key-card', `status-${status}`, { selected }]">
     <header class="key-card-header">
-      <label class="check-row" v-if="!archivedView">
-        <input type="checkbox" :checked="selected" @change="emit('select', item.id, ($event.target as HTMLInputElement).checked)" />
-        <strong>{{ item.name }}</strong>
-      </label>
-      <strong v-else>{{ item.name }}</strong>
+      <div class="key-title">
+        <label class="check-row" v-if="!archivedView">
+          <input type="checkbox" :checked="selected" @change="emit('select', item.id, ($event.target as HTMLInputElement).checked)" />
+          <strong>{{ item.name }}</strong>
+        </label>
+        <strong v-else>{{ item.name }}</strong>
+        <span>{{ groupName }}</span>
+      </div>
       <div class="card-actions">
         <span class="badge">{{ statusLabel }}</span>
         <button v-if="!item.archived" class="icon-btn" title="归档" @click="emit('archive', item.id)"><Archive :size="15" /></button>
@@ -70,9 +75,12 @@ const statusLabel = computed(() => {
     </div>
     <p v-else-if="usage.error" class="error-line">{{ usage.error }}</p>
     <template v-else>
-      <div class="progress-meta">
-        <span>{{ unlimited ? '无限额度' : `剩 $${remaining.toFixed(2)}` }}</span>
-        <span>{{ unlimited ? '—' : `${(100 - remainingPercent).toFixed(1)}%` }}</span>
+      <div class="usage-head">
+        <div>
+          <span>{{ unlimited ? '剩余额度' : '可用余额' }}</span>
+          <strong>{{ unlimited ? '无限' : `$${remaining.toFixed(2)}` }}</strong>
+        </div>
+        <span>{{ unlimited ? '无限额度' : `已用 ${consumedPercent.toFixed(1)}%` }}</span>
       </div>
       <div class="progress-track"><div class="progress-bar" :style="{ width: `${remainingPercent}%` }" /></div>
       <dl class="metric-grid">

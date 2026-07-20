@@ -215,6 +215,31 @@ const groupNames = computed(() => Object.keys(groupedKeys.value).sort());
 const archivedGroupNames = computed(() => Object.keys(groupedArchivedKeys.value).sort());
 const allGroups = computed(() => [...new Set(keys.value.map((item) => item.group || '默认分组'))]);
 const selectedCount = computed(() => selected.value.size);
+const currentPageMeta = computed(() => {
+  const meta: Record<PageName, { title: string; eyebrow: string; description: string }> = {
+    tokens: {
+      title: '令牌额度',
+      eyebrow: 'OpenRouter Key Monitor',
+      description: '监控可用额度、今日消耗、利润和异常密钥。'
+    },
+    archived: {
+      title: '归档令牌',
+      eyebrow: 'Archived Tokens',
+      description: '复查已归档密钥的余额和归档时间。'
+    },
+    notify: {
+      title: '通知设置',
+      eyebrow: 'Notification Rules',
+      description: '配置渠道、阈值和定时推送策略。'
+    },
+    settings: {
+      title: '系统设置',
+      eyebrow: 'System Preferences',
+      description: '维护价格、阈值、模板和登录凭据。'
+    }
+  };
+  return meta[page.value];
+});
 const metrics = computed(() => {
   let totalUsage = 0;
   let totalRemaining = 0;
@@ -567,35 +592,61 @@ onUnmounted(() => {
 
     <main class="main-content">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">OpenRouter Key Monitor</p>
-          <h1>{{ page === 'tokens' ? '令牌管理' : page === 'archived' ? '归档令牌' : page === 'notify' ? '通知设置' : '系统设置' }}</h1>
+        <div class="page-title">
+          <p class="eyebrow">{{ currentPageMeta.eyebrow }}</p>
+          <h1>{{ currentPageMeta.title }}</h1>
+          <p>{{ currentPageMeta.description }}</p>
         </div>
-        <button v-if="page === 'tokens' || page === 'archived'" class="primary-btn" :disabled="refreshing" @click="handleRefresh">
-          <Loader2 v-if="refreshing" :size="16" class="spin" />
-          <RefreshCw v-else :size="16" />
-          刷新
-        </button>
+        <div class="topbar-actions">
+          <span v-if="page === 'tokens'" class="sync-chip">{{ activeKeys.length }} 个有效令牌</span>
+          <span v-if="page === 'archived'" class="sync-chip">{{ archivedKeys.length }} 个归档令牌</span>
+          <button v-if="page === 'tokens' || page === 'archived'" class="primary-btn" :disabled="refreshing" @click="handleRefresh">
+            <Loader2 v-if="refreshing" :size="16" class="spin" />
+            <RefreshCw v-else :size="16" />
+            刷新
+          </button>
+        </div>
       </header>
 
       <section v-if="page === 'tokens'" class="dashboard">
         <div class="summary-strip">
-          <div><span>汇率差价</span><strong>¥{{ metrics.rateDiff.toFixed(2) }} / $1</strong></div>
-          <div><span>毛利率</span><strong>{{ metrics.margin.toFixed(2) }}%</strong></div>
-          <div><span>总消耗</span><strong>${{ metrics.totalUsage.toFixed(2) }}</strong></div>
-          <div><span>今日利润</span><strong>¥{{ metrics.todayProfit.toFixed(2) }}</strong></div>
+          <div>
+            <span>总剩余额度</span>
+            <strong>${{ metrics.totalRemaining.toFixed(2) }}</strong>
+            <small>{{ groupNames.length }} 个分组</small>
+          </div>
+          <div>
+            <span>今日消耗</span>
+            <strong>${{ metrics.todayUsage.toFixed(2) }}</strong>
+            <small>实时余额查询</small>
+          </div>
+          <div>
+            <span>今日利润</span>
+            <strong>¥{{ metrics.todayProfit.toFixed(2) }}</strong>
+            <small>差价 ¥{{ metrics.rateDiff.toFixed(2) }} / $1</small>
+          </div>
+          <div>
+            <span>毛利率</span>
+            <strong>{{ metrics.margin.toFixed(2) }}%</strong>
+            <small>按全局价格估算</small>
+          </div>
         </div>
 
         <div class="toolbar">
-          <label class="search-field"><Search :size="16" /><input v-model="searchText" placeholder="搜索名称、分组或密钥" /></label>
-          <select v-model="statusFilter">
-            <option value="all">全部状态</option>
-            <option value="healthy">健康</option>
-            <option value="warning">警告</option>
-            <option value="exhausted">耗尽</option>
-            <option value="error">错误</option>
-          </select>
-          <button class="secondary-btn" @click="searchText = ''; statusFilter = 'all'"><X :size="14" />清除筛选</button>
+          <label class="search-field">
+            <Search :size="16" />
+            <input v-model="searchText" placeholder="搜索名称、分组或密钥" />
+          </label>
+          <div class="filter-cluster">
+            <select v-model="statusFilter" aria-label="状态筛选">
+              <option value="all">全部状态</option>
+              <option value="healthy">健康</option>
+              <option value="warning">警告</option>
+              <option value="exhausted">耗尽</option>
+              <option value="error">错误</option>
+            </select>
+            <button class="secondary-btn" @click="searchText = ''; statusFilter = 'all'"><X :size="14" />清除筛选</button>
+          </div>
         </div>
 
         <p v-if="loading" class="empty-state">正在加载密钥...</p>
